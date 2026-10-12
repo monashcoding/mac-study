@@ -1682,7 +1682,8 @@ function useUnitWeeklyLeaderboard(
         .then((rows) => {
           if (!cancelled) setEntries(rows);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error("Could not load unit leaderboard", error);
           if (!cancelled) setEntries([]);
         });
 
