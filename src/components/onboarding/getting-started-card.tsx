@@ -7,7 +7,6 @@ import {
   BookPlus,
   Check,
   ChevronRight,
-  ListPlus,
   UserPlus,
   UsersRound,
   X,
@@ -41,14 +40,10 @@ type Step = {
 };
 
 export function GettingStartedCard({
-  hasSubject: actualHasSubject,
   hasUnit: actualHasUnit,
-  onAddSubject,
   userId,
 }: {
-  hasSubject: boolean;
   hasUnit: boolean;
-  onAddSubject: () => void;
   userId: string | null;
 }) {
   const [hidden, setHidden] = useState(false);
@@ -67,11 +62,11 @@ export function GettingStartedCard({
   // A preview shows the checklist as a brand new account would see it.
   const steps: Step[] = [
     {
-      action: { onClick: onAddSubject },
-      done: actualHasSubject && !isPreview,
-      icon: ListPlus,
-      key: "subjects",
-      label: "Add your subjects",
+      action: { href: "/app/units" },
+      done: actualHasUnit && !isPreview,
+      icon: BookPlus,
+      key: "units",
+      label: "Add your units",
     },
     {
       action: { href: "/app/friends" },
@@ -86,13 +81,6 @@ export function GettingStartedCard({
       icon: UsersRound,
       key: "group",
       label: "Create a study group",
-    },
-    {
-      action: { href: "/app/units" },
-      done: actualHasUnit && !isPreview,
-      icon: BookPlus,
-      key: "units",
-      label: "Add your units",
     },
   ];
   const doneCount = steps.filter((step) => step.done).length;
@@ -155,7 +143,7 @@ export function GettingStartedCard({
         <X aria-hidden size={16} />
       </button>
 
-      <ol className="mt-2.5 grid grid-cols-2 gap-1.5 xl:grid-cols-4">
+      <ol className="mt-2.5 grid grid-cols-3 gap-1.5">
         {steps.map((step) => (
           <li key={step.key}>
             <StepTile isNext={step.key === nextKey} step={step} />

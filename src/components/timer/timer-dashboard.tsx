@@ -784,9 +784,7 @@ export function TimerDashboard({
       {/* Wait for real data so the checklist doesn't flash for returning users. */}
       {isLoaded ? (
         <GettingStartedCard
-          hasSubject={subjects.length > 0}
           hasUnit={unitEnrollments.length > 0}
-          onAddSubject={openNewSubjectEditor}
           userId={userId}
         />
       ) : null}
