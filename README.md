@@ -125,6 +125,11 @@ Supabase Cron or Dokploy job to call that endpoint with:
 Authorization: Bearer <STUDY_REMINDER_CRON_SECRET>
 ```
 
+The same job also guards against forgotten timers (after applying
+`20261013010000_long_study_session_limits.sql`): one "Still studying?" push at
+8 hours of a continuous session, and at 12 hours the session is stopped,
+capped at 12 hours and flagged for review.
+
 The scheduler secret is server-only. Do not add it to a migration or browser
 environment variable.
 

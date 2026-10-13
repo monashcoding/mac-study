@@ -421,13 +421,13 @@ isOneToOne: false
                   ]
                 },"study_sessions": {
                   Row: {
-                    "created_at": string,"deleted_at": string | null,"duration_seconds": number | null,"ended_at": string | null,"group_id": string | null,"id": string,"note": string | null,"reminder_interval_minutes": number | null,"reminder_last_sent_at": string | null,"source": string,"started_at": string,"status": string,"subject_id": string | null,"updated_at": string,"user_id": string
+                    "created_at": string,"deleted_at": string | null,"duration_seconds": number | null,"ended_at": string | null,"group_id": string | null,"id": string,"long_session_check_sent_at": string | null,"note": string | null,"reminder_interval_minutes": number | null,"reminder_last_sent_at": string | null,"source": string,"started_at": string,"status": string,"subject_id": string | null,"updated_at": string,"user_id": string
                   }
                   Insert: {
-                    "created_at"?: string,"deleted_at"?: string | null,"duration_seconds"?: never,"ended_at"?: string | null,"group_id"?: string | null,"id"?: string,"note"?: string | null,"reminder_interval_minutes"?: number | null,"reminder_last_sent_at"?: string | null,"source"?: string,"started_at": string,"status"?: string,"subject_id"?: string | null,"updated_at"?: string,"user_id": string
+                    "created_at"?: string,"deleted_at"?: string | null,"duration_seconds"?: never,"ended_at"?: string | null,"group_id"?: string | null,"id"?: string,"long_session_check_sent_at"?: string | null,"note"?: string | null,"reminder_interval_minutes"?: number | null,"reminder_last_sent_at"?: string | null,"source"?: string,"started_at": string,"status"?: string,"subject_id"?: string | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"deleted_at"?: string | null,"duration_seconds"?: never,"ended_at"?: string | null,"group_id"?: string | null,"id"?: string,"note"?: string | null,"reminder_interval_minutes"?: number | null,"reminder_last_sent_at"?: string | null,"source"?: string,"started_at"?: string,"status"?: string,"subject_id"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "created_at"?: string,"deleted_at"?: string | null,"duration_seconds"?: never,"ended_at"?: string | null,"group_id"?: string | null,"id"?: string,"long_session_check_sent_at"?: string | null,"note"?: string | null,"reminder_interval_minutes"?: number | null,"reminder_last_sent_at"?: string | null,"source"?: string,"started_at"?: string,"status"?: string,"subject_id"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -751,6 +751,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"user_presence": {
+                  Row: {
+                    "last_active_at": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "last_active_at"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "last_active_at"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "user_presence_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -772,6 +791,11 @@ isOneToOne: false
 "claim_due_study_reminders":
 { Args: { "batch_size"?: number }; Returns: {
               "reminder_interval_minutes": number,"session_id": string,"started_at": string,"user_id": string
+            }[]
+                           },
+"claim_long_study_session_checks":
+{ Args: { "batch_size"?: number }; Returns: {
+              "session_id": string,"started_at": string,"user_id": string
             }[]
                            },
 "create_study_group":
@@ -960,6 +984,14 @@ isOneToOne: false
                            },
 "shares_active_group_with_user":
 { Args: { "target_user_id": string }; Returns: boolean
+                           },
+"stop_overlong_study_sessions":
+{ Args: { "batch_size"?: number }; Returns: {
+              "ended_at": string,"session_id": string,"started_at": string,"user_id": string
+            }[]
+                           },
+"touch_user_presence":
+{ Args: { "is_active": boolean }; Returns: undefined
                            },
 "transfer_group_leadership":
 { Args: { "target_group_id": string,"target_user_id": string }; Returns: boolean

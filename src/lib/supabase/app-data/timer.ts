@@ -4,6 +4,7 @@ import type {
 } from "../types";
 import type { UnitEnrollment } from "@/lib/units";
 import { invalidateRemoteCachesForTable } from "@/lib/client-cache";
+import { getCappedSessionEnd } from "@/lib/timer";
 import { getRemoteUserId } from "./shared";
 import type { RemoteTimerState } from "./types";
 import {
@@ -211,7 +212,7 @@ export async function stopRemoteStudySession(supabase: SupabaseClient) {
   if (activeError) throw activeError;
   if (!activeSession) return null;
 
-  const endedAt = new Date();
+  const endedAt = getCappedSessionEnd(activeSession.started_at);
   const durationMs =
     endedAt.getTime() - new Date(activeSession.started_at).getTime();
   const status: "needs_confirmation" | "completed" =

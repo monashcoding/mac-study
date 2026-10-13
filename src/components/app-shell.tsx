@@ -40,9 +40,9 @@ import { fetchGroupChatUnreadCounts } from "@/lib/supabase/group-chat-read-recei
 import { AppWorkspace } from "@/components/app-workspace";
 import { AppHeaderDetailProvider } from "@/components/app-header-detail";
 import { OnboardingPreviewBanner } from "@/components/onboarding/onboarding-preview-banner";
-import { WelcomeOnboarding } from "@/components/onboarding/welcome-onboarding";
 import { InstallOnboarding } from "@/components/pwa/install-onboarding";
 import { NotificationOnboarding } from "@/components/pwa/notification-onboarding";
+import { useAppPresence } from "@/components/pwa/use-app-presence";
 import { AppNotifications } from "@/components/social/app-notifications";
 import { NudgeNotifications } from "@/components/social/nudge-notifications";
 import { SidebarStudyTimer } from "@/components/timer/sidebar-study-timer";
@@ -106,8 +106,6 @@ export function AppShell({
     Record<string, number>
   >({});
   const [navUnread, setNavUnread] = useState({ friends: false, groups: false });
-  const [welcomeOnboardingComplete, setWelcomeOnboardingComplete] =
-    useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollPositionsRef = useRef<Record<string, number>>({});
   const currentNav =
@@ -141,9 +139,8 @@ export function AppShell({
     },
     [],
   );
-  const handleWelcomeOnboardingComplete = useCallback(() => {
-    setWelcomeOnboardingComplete(true);
-  }, []);
+
+  useAppPresence(authState.mode === "authenticated");
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -609,13 +606,9 @@ export function AppShell({
             <AppNotifications userId={authState.user.id} />
             <NudgeNotifications userId={authState.user.id} />
             <OnboardingPreviewBanner />
-            <WelcomeOnboarding
-              onComplete={handleWelcomeOnboardingComplete}
-              userId={authState.user.id}
-            />
-            <InstallOnboarding enabled={welcomeOnboardingComplete} />
+            <InstallOnboarding enabled />
             <NotificationOnboarding
-              enabled={welcomeOnboardingComplete}
+              enabled
               userId={authState.user.id}
             />
           </>
