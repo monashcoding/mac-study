@@ -128,6 +128,16 @@ export function isLongSession(startedAt: string, now = new Date()) {
   return getElapsedSeconds(startedAt, now) >= 6 * 60 * 60;
 }
 
+// Matches the scheduler in 20261013010000_long_study_session_limits.sql.
+export const LONG_SESSION_CHECK_SECONDS = 8 * 60 * 60;
+export const MAX_SESSION_SECONDS = 12 * 60 * 60;
+
+export function getCappedSessionEnd(startedAt: string, now = new Date()) {
+  const maxEnd = new Date(startedAt).getTime() + MAX_SESSION_SECONDS * 1000;
+
+  return new Date(Math.min(now.getTime(), maxEnd));
+}
+
 function getAustralianDateTimeParts(date: Date) {
   const values = Object.fromEntries(
     australianDateTimeFormatter

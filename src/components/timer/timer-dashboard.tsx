@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useId,
   useMemo,
   useRef,
@@ -52,9 +53,13 @@ import {
   addDateKeyDays,
   formatDuration,
   getAustralianDateStart,
+  getCappedSessionEnd,
+  getElapsedSeconds,
   getIntervalOverlapSeconds,
   getLocalDateKey,
   isLongSession,
+  LONG_SESSION_CHECK_SECONDS,
+  MAX_SESSION_SECONDS,
 } from "@/lib/timer";
 import { StartStudyDialog } from "@/components/study/start-study-dialog";
 import { emitStudySessionChange } from "@/lib/study-session-events";
@@ -165,6 +170,7 @@ export function TimerDashboard({
   const isSavingSubjectsRef = useRef(false);
   const isEditingSubjectsRef = useRef(false);
   const isSessionMutationInFlightRef = useRef(false);
+  const longSessionCheckShownForRef = useRef<string | null>(null);
 
   useEffect(() => {
     isEditingSubjectsRef.current = isEditingSubjects;
@@ -393,6 +399,12 @@ export function TimerDashboard({
       )
     : 0;
   const totalToday = completedToday + activeToday;
+  const activeElapsedSeconds = activeSession
+    ? getElapsedSeconds(activeSession.startedAt, now)
+    : 0;
+  const needsLongSessionCheck =
+    activeElapsedSeconds >= LONG_SESSION_CHECK_SECONDS;
+  const hasReachedMaxSession = activeElapsedSeconds >= MAX_SESSION_SECONDS;
   const sortedSessions = useMemo(
     () =>
       [...sessions].sort(
@@ -455,7 +467,7 @@ export function TimerDashboard({
 
     const stoppingSession = activeSession;
     const previousSessions = sessions;
-    const endedAt = new Date();
+    const endedAt = getCappedSessionEnd(stoppingSession.startedAt);
     const sessionId = crypto.randomUUID();
     const needsConfirmation = isLongSession(stoppingSession.startedAt, endedAt);
     const optimisticCompletedSession: StoredSession = {
@@ -519,6 +531,32 @@ export function TimerDashboard({
       setEditingSessionId(sessionId);
     }
   }
+
+  const stopOverlongSession = useEffectEvent(() => {
+    setIsStudyCheckInOpen(false);
+    setSubjectToastMessage("Timer stopped after 12 hours");
+    void stopStudy();
+  });
+
+  const openLongSessionCheck = useEffectEvent(() => {
+    if (!activeSession) return;
+    if (longSessionCheckShownForRef.current === activeSession.startedAt) return;
+
+    longSessionCheckShownForRef.current = activeSession.startedAt;
+    setIsStudyCheckInOpen(true);
+  });
+
+  // Mirrors the server scheduler for whoever has the app open: one check-in
+  // at 8 hours, then a hard stop capped at 12 hours.
+  useEffect(() => {
+    if (!isLoaded || !hasReachedMaxSession) return;
+    window.queueMicrotask(stopOverlongSession);
+  }, [hasReachedMaxSession, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded || !needsLongSessionCheck || hasReachedMaxSession) return;
+    window.queueMicrotask(openLongSessionCheck);
+  }, [hasReachedMaxSession, isLoaded, needsLongSessionCheck]);
 
   async function openReminderDialog() {
     setReminderFeedback(null);
@@ -1059,7 +1097,7 @@ export function TimerDashboard({
         >
           <p className="text-sm leading-6 text-[var(--color-text-muted)]">
             Your study timer is still running. Keep it going or stop the session
-            now.
+            now. Timers stop automatically after 12 hours.
           </p>
         </AppDialog>
       ) : null}

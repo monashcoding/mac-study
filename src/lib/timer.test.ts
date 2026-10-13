@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDuration,
+  getCappedSessionEnd,
   getElapsedSeconds,
   groupSessionsBySubject,
   isLongSession,
@@ -56,5 +57,20 @@ describe("timer helpers", () => {
         new Date("2026-06-04T07:00:00.000Z"),
       ),
     ).toBe(true);
+  });
+
+  it("caps session end at twelve hours after start", () => {
+    expect(
+      getCappedSessionEnd(
+        "2026-06-04T01:00:00.000Z",
+        new Date("2026-06-04T20:00:00.000Z"),
+      ).toISOString(),
+    ).toBe("2026-06-04T13:00:00.000Z");
+    expect(
+      getCappedSessionEnd(
+        "2026-06-04T01:00:00.000Z",
+        new Date("2026-06-04T05:00:00.000Z"),
+      ).toISOString(),
+    ).toBe("2026-06-04T05:00:00.000Z");
   });
 });
