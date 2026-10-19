@@ -1446,6 +1446,17 @@ function OfferingDetail({
         )}
       </div>
 
+      {/* Top padding leaves room for the mascot peeking over the board. */}
+      <div className="pt-8 lg:hidden">
+        <UnitWeeklyLeaderboard
+          code={enrollment.code}
+          currentUserId={currentUserId}
+          entries={leaderboard}
+          isLinked={Boolean(linkedSubject)}
+          isRemote={Boolean(remoteClient)}
+        />
+      </div>
+
       <div className="hidden items-center gap-2 text-[13px] font-semibold text-[var(--color-text-muted)] lg:flex">
         <button
           aria-label="Back to units"
@@ -1514,6 +1525,7 @@ function OfferingDetail({
             code={enrollment.code}
             currentUserId={currentUserId}
             entries={leaderboard}
+            isLinked={Boolean(linkedSubject)}
             isRemote={Boolean(remoteClient)}
           />
         </aside>
@@ -1666,7 +1678,7 @@ const LEADERBOARD_TABLES = new Set([
   "unit_enrolments",
 ]);
 
-// One request feeds both the desktop board and the mobile "Counting" row.
+// One request feeds both boards and the mobile "Counting" row.
 function useUnitWeeklyLeaderboard(
   offeringId: string,
   remoteClient: SupabaseClient | null,
@@ -1705,11 +1717,13 @@ function UnitWeeklyLeaderboard({
   code,
   currentUserId,
   entries,
+  isLinked,
   isRemote,
 }: {
   code: string;
   currentUserId: string | null;
   entries: UnitLeaderboardEntry[] | null;
+  isLinked: boolean;
   isRemote: boolean;
 }) {
   const ranked = (entries ?? []).filter((entry) => entry.weekSeconds > 0);
@@ -1757,8 +1771,8 @@ function UnitWeeklyLeaderboard({
               <li
                 className={cn(
                   "grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5",
-                  // Mobile keeps it short: top 3 only.
-                  index >= 3 && "hidden lg:grid",
+                  // Mobile keeps it short: top 3, plus you if further down.
+                  index >= 3 && !isYou && "hidden lg:grid",
                 )}
                 key={entry.id}
               >
@@ -1799,8 +1813,10 @@ function UnitWeeklyLeaderboard({
         </ol>
       ) : (
         <p className="mt-3 pr-16 text-[13px] leading-5 text-[var(--color-text-muted)]">
-          No study logged for {code} yet this week. Link a subject and start a
-          session to lead the board.
+          No study logged for {code} yet this week.{" "}
+          {isLinked
+            ? "Start a session to lead the board."
+            : "Link a subject and start a session to lead the board."}
         </p>
       )}
     </section>
